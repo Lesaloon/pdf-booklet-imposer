@@ -1,0 +1,35 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "@spartan-ng/brain/hlm-tailwind-preset.css";
+
+:root {
+  color-scheme: light;
+  --font-sans: 'Segoe UI', Arial, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, monospace;
+  --radius: .625rem;
+  --background: #f9fbfe;
+  --foreground: #1f3049;
+  --card: #ffffff;
+  --card-foreground: #1f3049;
+  --popover: #ffffff;
+  --popover-foreground: #1f3049;
+  --primary: #2859b9;
+  --primary-foreground: #ffffff;
+  --secondary: #edf2fa;
+  --secondary-foreground: #1f3049;
+  --muted: #edf2fa;
+  --muted-foreground: #5f7089;
+  --accent: #edf2fa;
+  --accent-foreground: #1f3049;
+  --destructive: #a52a26;
+  --border: #dce3ee;
+  --input: #bdc9dc;
+  --ring: #2859b9;
+}
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans); }
+a, button, select { -webkit-tap-highlight-color: transparent; }
+button, select { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }

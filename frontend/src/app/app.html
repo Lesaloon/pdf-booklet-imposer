@@ -1,0 +1,95 @@
+<div class="shell">
+  <header class="masthead">
+    <a class="brand" href="/" aria-label="PDF Booklet Imposer home">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M4 5h10l2 3h10v18H16l-2-3H4V5Z" stroke="currentColor" stroke-width="1.7"/><path d="M15 8v15" stroke="currentColor" stroke-dasharray="2 2"/></svg>
+      <span>PDF Booklet Imposer</span>
+    </a>
+    <span class="header-note">Ready for the fold.</span>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <p class="eyebrow">A-series booklet printing</p>
+      <h1 id="title">Your PDF.<br>A little more <span>bookish.</span></h1>
+      <p class="lede">Turn pages in reading order into a booklet you can print, fold, and staple. Pick your page size. We’ll put everything in its place.</p>
+    </section>
+
+    <div class="workspace">
+      <section class="converter" aria-labelledby="converter-title" [attr.aria-busy]="busy()">
+        <h2 id="converter-title">Create your booklet</h2>
+        <p class="muted">Start with a portrait PDF in reading order.</p>
+        <div class="dropzone" [class.dragging]="dragging()" (dragover)="$event.preventDefault(); dragging.set(!busy())" (dragleave)="dragging.set(false)" (drop)="drop($event)">
+          <svg width="34" height="40" viewBox="0 0 34 40" fill="none" aria-hidden="true"><path d="M5 2h15l9 9v27H5V2Z" stroke="currentColor" stroke-width="1.5"/><path d="M20 2v10h9M11 22h12M11 28h8" stroke="currentColor" stroke-width="1.5"/></svg>
+          @if (file(); as file) {
+            <strong class="filename">{{ file.name }}</strong>
+            <span class="muted">{{ (file.size / 1024 / 1024).toFixed(2) }} MB · Ready to arrange</span>
+          } @else {
+            <strong>Drop your PDF here</strong>
+            <span class="muted">or choose one from your device</span>
+          }
+          <input #fileInput class="sr-only" id="pdf-file" type="file" accept=".pdf,application/pdf" (change)="chooseFile($event)" [disabled]="busy()" aria-label="Choose a PDF file" />
+          <button hlmBtn variant="outline" type="button" [disabled]="busy()" (click)="fileInput.click()">{{ file() ? 'Change PDF' : 'Choose PDF' }}</button>
+          <span class="file-limit">PDF only · up to {{ maxMb() }} MB</span>
+        </div>
+
+        <div class="format-row">
+          <div>
+            <label for="page-format">PDF page size</label>
+            <p class="muted small">The size of each finished booklet page.</p>
+          </div>
+          <hlm-native-select selectId="page-format" [value]="format()" (valueChange)="changeFormat($event)" [disabled]="busy() || loading() || !formats().length" selectClass="h-11 min-w-36 bg-white">
+            @for (item of formats(); track item.input) {
+              <option [value]="item.input">{{ item.input }} · {{ item.input_mm[0] }} × {{ item.input_mm[1] }} mm</option>
+            }
+          </hlm-native-select>
+        </div>
+        <p class="fit-note">Pages are fitted proportionally to the selected size, without cropping.</p>
+
+        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+        @if (!loading() && !formats().length) {
+          <button hlmBtn variant="outline" type="button" (click)="loadFormats()">Retry connection</button>
+        }
+        <button hlmBtn size="lg" class="convert-button h-12 w-full" type="button" [disabled]="!file() || busy() || loading() || !formats().length" (click)="convert()">
+          @if (busy()) { <span class="spinner" aria-hidden="true"></span> Arranging your pages… }
+          @else { Create booklet <span aria-hidden="true">→</span> }
+        </button>
+        <p class="privacy">Files are processed temporarily and deleted after download.</p>
+
+        <div aria-live="polite" aria-atomic="true">
+          @if (result(); as result) {
+            <section class="result" aria-labelledby="result-title">
+              <h3 id="result-title">Your booklet is ready.</h3>
+              <p>{{ result.pages }} pages · {{ result.sheets }} duplex sheet{{ result.sheets === 1 ? '' : 's' }} · {{ result.blanks }} blank page{{ result.blanks === 1 ? '' : 's' }} added</p>
+              <a hlmBtn size="lg" [href]="result.url" [download]="result.filename">Download PDF <span aria-hidden="true">↓</span></a>
+            </section>
+          }
+        </div>
+      </section>
+
+      <aside class="print-panel" aria-labelledby="print-title">
+        <p class="eyebrow" id="print-title">Your print setup</p>
+        @if (selected(); as selected) {
+          <h2>{{ selected.input }} pages <span aria-hidden="true">→</span> {{ selected.sheet }} sheets</h2>
+          <p class="muted">{{ selected.sheet_mm[0] }} × {{ selected.sheet_mm[1] }} mm · landscape</p>
+          <div class="sheet-diagram" role="img" [attr.aria-label]="'Two ' + selected.input + ' pages side by side on an ' + selected.sheet + ' sheet. Fold down the center.'">
+            <div class="paper-spread"><div><span>{{ selected.input }}</span><small>back cover</small></div><div><span>{{ selected.input }}</span><small>front cover</small></div></div>
+            <span class="fold-label">fold here</span>
+          </div>
+          <p class="diagram-caption">Two pages per side. One fold down the middle.</p>
+          <dl class="print-settings">
+            <div><dt>Paper</dt><dd>{{ selected.sheet }} landscape</dd></div>
+            <div><dt>Scale</dt><dd>Actual size / 100%</dd></div>
+            <div><dt>Double-sided</dt><dd>Flip on short edge</dd></div>
+            <div><dt>Pages per sheet</dt><dd>1 (already arranged)</dd></div>
+          </dl>
+          <p class="print-tip">Print all pages in order, stack the sheets, then fold and staple along the spine. Turn off your printer’s booklet mode.</p>
+        } @else {
+          <p class="muted">{{ loading() ? 'Loading paper formats…' : 'Connect to the converter to see paper sizes.' }}</p>
+        }
+      </aside>
+    </div>
+    <p class="bottom-note">ISO A-series only · A1–A10 input · Blank pages added automatically when needed</p>
+  </main>
+
+  <footer>made with ❤️ by <a href="https://github.com/Lesaloon" target="_blank" rel="noopener noreferrer">lesaloon</a></footer>
+</div>
