@@ -83,6 +83,26 @@ No inbound router ports are required. The host must be able to reach Cloudflare 
 
 See [Cloudflare’s tunnel setup guide](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/create-remote-tunnel/).
 
+## Update and restart
+
+Two executable scripts pull the latest code and rebuild before restarting:
+
+```sh
+./up-dev.sh      # Local Docker stack at localhost:8080, without the tunnel
+./up-hosting.sh  # Docker stack with Cloudflare Tunnel
+```
+
+Both require a `.env` file and fail immediately if it is missing. For local use,
+copy `.env.example` to `.env`; the tunnel token can remain empty. Hosting requires
+your tunnel token. The scripts work from any working directory.
+
+Each script runs `git pull --ff-only`, validates Compose configuration, builds
+images while the current app stays online, then runs `down` followed by
+`up -d --wait`. A failed pull, configuration check, or build leaves the running
+stack untouched. Switching to dev also stops an existing tunnel. This minimizes
+the restart window, but is not zero-downtime deployment. Dev here means the local
+Docker stack; use the local development instructions below for hot reloading.
+
 ## Printing
 
 1. Choose the sheet size shown in the app, in **landscape** orientation.
